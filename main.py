@@ -18,21 +18,16 @@ try:
 
     print("Titulo: ",data["title"])
     print("Información encontrada")
-    for i, p in enumerate(data["paragraphs"], start=1):
-        print(f"\nPárrafo original {i}: {p}")
-        enriched = enriched + p
+    texto = data["paragraphs"]
 
-    enriched = enriched_service.enrich_text(p)
+    enriched = enriched_service.enrich_text(texto)
     print(f"Información enriquecida: {enriched}")
-
-        translator = TranslatorService().translate_text(enriched, src_lang, trg_lang)
-        print(f"\nPárrafo {i} traducido: {translator} ")
-
-        pdf = PdfService()
-        pdf.add_title(data["title"])
-        pdf.add_paragraph(enriched)
-
-        pdf.save(text)
+    translator = TranslatorService().translate_text(enriched, src_lang, trg_lang)
+    print(translator)
+    pdf = PdfService()
+    pdf.add_title(data["title"])
+    pdf.add_paragraph(enriched)
+    pdf.save(text)
 
 except Exception as e:
     print(f"Error encontrado: {e}")

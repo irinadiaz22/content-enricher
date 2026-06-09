@@ -10,7 +10,7 @@ class PdfService:
 
     def add_title(self, title: str):
         self.pdf.set_font("Arial", style= "B", size=16)
-        self.pdf.cell(O, 10, title, ln=True, align="C")
+        self.pdf.cell(w=0, h=10, txt=title, ln=True, align="C")
         self.pdf.ln(5)
         self.pdf.set_font("Arial", size=12)
 
