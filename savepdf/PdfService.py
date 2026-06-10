@@ -1,4 +1,4 @@
-from fontTools.misc.cython import returns
+import os
 from fpdf import FPDF
 
 class PdfService:
@@ -21,6 +21,10 @@ class PdfService:
         print("Generando pdf")
 
     def save(self, filename: str):
-        self.pdf.output("output\documento.pdf")
+        nombre_archivo = input("Ingrese el nombre del archivo: (sin .pdf)")
+        os.makedirs("output", exist_ok=True)
+        ruta = f"output/{nombre_archivo}.pdf"
+        self.pdf.output(ruta)
+        print(f"PDF guardado en : {ruta}")
         return filename
 
