@@ -1,4 +1,7 @@
 import os
+import time
+
+from cffi import error
 from google import genai
 from dotenv import load_dotenv
 
@@ -12,11 +15,30 @@ class GeminiAIService:
 
         self.client = genai.Client(api_key=api_key)
 
-    def enrich_text(self, text: str) -> str:
-        prompt = f"Mejora y enriquece el siguiente texto manteniendo su significado:\n\n{text}"
-        response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-        return response.text
+    def enrich_text(self, text: str, retries: int = 3, delay: int = 2) -> str:
+        prompt = f"Mejora y enriquece el siguiente texto manteniendo su , no me digas que mejoras hiciste, solo hazlas, Solo devuelveme el titulo y texto, sin escribir nada mas:\n\n{text}"
+        for intento in range(1, retries + 1):
+            try:
+                response = self.client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                if not response or not response.text:
+                    raise ValueError("Sin respuesta de Gemini")
+
+                return response.text
+
+            except Exception as e:
+                error.msg = str(e)
+
+                if "503" in error.msg or "UNAVAILABLE" in error.msg:
+                    print(f"Gemini respondio error 503 (intento {intento})/{retries}")
+                    time.sleep(delay)
+                    continue
+
+                raise e     #si el error es distinto a 503, se lanza directamente
+        raise RuntimeError("Gemini fallo después de varios intentos")
+
+
+
 

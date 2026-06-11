@@ -4,24 +4,33 @@ from ai.GeminiAIService import GeminiAIService
 from savepdf.PdfService import PdfService
 from utils.utils import get_user_input
 from utils.YesNoService import YesNoService
+from utils.Validator import validator
+from utils.CleanText import clean_text
 
 text = get_user_input("Ingresa el tema que quieres buscar: ")
-
 #Instancia la clase para buscar info de un tema en Wiquipedia
 scraper = ScraperWikipedia(text)
-enriched_service = GeminiAIService()
+
+while validator(text) == False:
+    text = get_user_input("Ingresa el tema que quieres buscar: ")
+else:
+    enriched_service = GeminiAIService()
 
 try:
     html = scraper.fetch_html()
     data = scraper.parse_html(html)
-
     print("Titulo: ",data["title"])
     print("Información encontrada")
     texto = data["paragraphs"]
+
+    if isinstance(texto, list):
+        texto = " ".join(texto)
+
+    texto = clean_text(texto)
     print(texto)
 
     enriched = enriched_service.enrich_text(texto)
-    print(f"Información enriquecida: \n {enriched}")
+    print(f"\nInformación enriquecida: \n{enriched}")
 
     src_lang = "auto"
     trg_lang = get_user_input("Ingresa el idioma al que quieres traducir: ")
@@ -35,10 +44,10 @@ try:
         txt_pdf = texto
 
     if yn.ask("Añadir texto enriquesido: y/n"):
-        txt_pdf = (f"{txt_pdf} + \n + {enriched}")
+        txt_pdf = (f"{txt_pdf} \n\n Resumen mejorado \n {enriched}")
 
     if yn.ask("Añadir texto traducido: y/n"):
-        txt_pdf = (f"{txt_pdf} + \n + {translator}")
+        txt_pdf = (f"{txt_pdf} \n\n Traducción \n {translator}")
 
     pdf = PdfService()
     pdf.add_title(data["title"])
